@@ -10,4 +10,4 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-add_subdirectory(dijkstra)
+add_subdirectory(dijkstra_algorithm)

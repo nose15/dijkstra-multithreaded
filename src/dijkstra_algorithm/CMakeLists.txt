@@ -7,7 +7,7 @@ target_sources(dijkstra_algorithm
     PUBLIC
         include/dijkstra_algorithm/dijkstra.hpp
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/dijkstra.cpp
+        src/dijkstra.cpp
 )
 
 target_include_directories(dijkstra_algorithm
