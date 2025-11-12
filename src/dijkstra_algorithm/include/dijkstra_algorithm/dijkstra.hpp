@@ -5,15 +5,13 @@
 #ifndef DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_INCLUDE_DIJKSTRA_HPP_
 #define DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_INCLUDE_DIJKSTRA_HPP_
 
+#include <dijkstra_algorithm/edge.hpp>
+
 #include <vector>
 
 namespace dijkstra_algorithm {
 
-struct Edge {
-  int to, weight;
-};
-
-void dijkstra(int n, int start, const std::vector<std::vector<Edge>>& graph);
+std::vector<int> dijkstra(int n, int start, const std::vector<std::vector<Edge>>& graph);
 
 }
 

@@ -12,7 +12,7 @@ namespace dijkstra_algorithm {
 
 const int INF = std::numeric_limits<int>::max();
 
-void dijkstra(int n, int start, const std::vector<std::vector<Edge>> &graph) {
+std::vector<int> dijkstra(int n, int start, const std::vector<std::vector<Edge>> &graph) {
   std::vector<int> dist(n, INF);
   dist[start] = 0;
 
@@ -35,6 +35,8 @@ void dijkstra(int n, int start, const std::vector<std::vector<Edge>> &graph) {
       }
     }
   }
+
+  return dist;
 }
 
 }

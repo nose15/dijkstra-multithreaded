@@ -6,6 +6,6 @@
 #include <dijkstra_algorithm/dijkstra.hpp>
 
 TEST(Dijkstra, BasicPathFinding) {
-  dijkstra_algorithm::dijkstra()
+
 
 }
