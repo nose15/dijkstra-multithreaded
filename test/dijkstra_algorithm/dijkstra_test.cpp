@@ -3,7 +3,9 @@
 //
 
 #include <gtest/gtest.h>
+#include <dijkstra_algorithm/dijkstra.hpp>
 
 TEST(Dijkstra, BasicPathFinding) {
-  ASSERT_EQ(1, 2);
+  dijkstra_algorithm::dijkstra()
+
 }

@@ -11,6 +11,7 @@ add_executable(
 )
 target_link_libraries(
         dijkstra_test
+        dijkstra_algorithm
         GTest::gtest_main
 )
 
