@@ -8,7 +8,41 @@
 #include <thread>
 #include <limits>
 #include <iostream>
-#include <memory>
+
+std::vector<double> dijkstra(const Graph& g, int source) {
+  using PQItem = std::pair<double, int>; // (distance, node)
+  const int n = g.size();
+
+  const double INF = std::numeric_limits<double>::infinity();
+  std::vector<double> dist(n, INF);
+  dist[source] = 0.0;
+
+  // Min-heap by distance
+  std::priority_queue<PQItem, std::vector<PQItem>, std::greater<>> pq;
+  pq.emplace(0.0, source);
+
+  while (!pq.empty()) {
+    auto [d_u, u] = pq.top();
+    pq.pop();
+
+    // Skip stale entries
+    if (d_u > dist[u])
+      continue;
+
+    // Relax edges
+    for (const auto& e : g.adj()[u]) {
+      int v = e.to;
+      double nd = d_u + e.weight;
+
+      if (nd < dist[v]) {
+        dist[v] = nd;
+        pq.emplace(nd, v);
+      }
+    }
+  }
+
+  return dist;
+}
 
 std::vector<double> parallel_dijkstra(const Graph& g, int source, int num_threads, int partitions) {
   int n = g.size();
