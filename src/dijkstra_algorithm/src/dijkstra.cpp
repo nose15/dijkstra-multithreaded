@@ -1,43 +1,78 @@
 //
-// Created by lukasz on 11.11.25.
+// Created by lukasz on 25.11.25.
 //
 
 #include <dijkstra_algorithm/dijkstra.hpp>
-
-#include <vector>
-#include <queue>
+#include <data_structures/concurrent_kqueue.hpp>
+#include <atomic>
+#include <thread>
 #include <limits>
+#include <iostream>
 
-namespace dijkstra_algorithm {
+std::vector<double> parallel_dijkstra(const Graph &g, int source, int num_threads, int partitions) {
+  int n = g.size();
+  const auto &adj = g.adj();
+  const double INF = std::numeric_limits<double>::infinity();
 
-const int INF = std::numeric_limits<int>::max();
 
-std::vector<int> dijkstra(int n, int start, const std::vector<std::vector<Edge>> &graph) {
-  std::vector<int> dist(n, INF);
-  dist[start] = 0;
+// distances as atomics so threads can read/update concurrently
+  std::vector<std::atomic<double>> dist_atomic(n);
+  for (int i = 0; i < n; ++i) dist_atomic[i].store(INF);
+  dist_atomic[source].store(0.0);
 
-  std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<>> pq;
-  pq.emplace(0, start);
 
-  while (!pq.empty()) {
-    auto [d, u] = pq.top();
-    pq.pop();
+  ConcurrentKQueue queue(partitions, 2);
+  queue.push(0.0, source);
 
-    if (d > dist[u]) continue;
 
-    for (const auto& edge : graph[u]) {
-      int v = edge.to;
-      int w = edge.weight;
+  std::atomic<int> active_workers{0};
+  std::atomic<bool> stop_flag{false};
 
-      if (dist[u] + w < dist[v]) {
-        dist[v] = dist[u] + w;
-        pq.emplace(dist[v], v);
+
+  auto worker = [&](int tid){
+    ++active_workers;
+    while (!stop_flag.load()) {
+      auto opt = queue.pop();
+      if (!opt.has_value()) {
+// no item available; if queue empty and no other workers active, finish
+        if (queue.empty()) break;
+// otherwise busy-wait briefly
+        std::this_thread::yield();
+        continue;
+      }
+      auto [d_u, u] = *opt;
+// Check if this is an outdated entry
+      double cur = dist_atomic[u].load();
+      if (d_u > cur + 1e-15) continue; // stale entry
+
+
+// relax neighbors
+      for (const auto &e : adj[u]) {
+        int v = e.to;
+        double nd = d_u + e.weight;
+        double prev = dist_atomic[v].load();
+        while (nd + 1e-15 < prev) {
+// attempt to set a better distance
+          if (dist_atomic[v].compare_exchange_weak(prev, nd)) {
+// pushed new candidate into queue
+            queue.push(nd, v);
+            break;
+          }
+// compare_exchange_weak updated prev with current value; loop if still larger
+        }
       }
     }
-  }
+    --active_workers;
+  };
 
-  return dist;
+
+  std::vector<std::thread> threads;
+  for (int t = 0; t < num_threads; ++t) threads.emplace_back(worker, t);
+  for (auto &th : threads) th.join();
+
+
+// gather results
+  std::vector<double> result(n);
+  for (int i = 0; i < n; ++i) result[i] = dist_atomic[i].load();
+  return result;
 }
-
-}
-

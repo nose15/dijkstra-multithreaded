@@ -1,18 +1,14 @@
 //
-// Created by lukasz on 11.11.25.
+// Created by lukasz on 25.11.25.
 //
 
-#ifndef DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_INCLUDE_DIJKSTRA_HPP_
-#define DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_INCLUDE_DIJKSTRA_HPP_
+#ifndef DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_ALGORITHM_INCLUDE_DIJKSTRA_ALGORITHM_DIJKSTRA_HPP_
+#define DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_ALGORITHM_INCLUDE_DIJKSTRA_ALGORITHM_DIJKSTRA_HPP_
 
-#include <dijkstra_algorithm/edge.hpp>
-
+#include <data_structures/graph.hpp>
 #include <vector>
 
-namespace dijkstra_algorithm {
+// Runs parallel Dijkstra from source s. Returns vector<double> distances (infinity if unreachable)
+std::vector<double> parallel_dijkstra(const Graph &g, int source, int num_threads = 4, int partitions = 8);
 
-std::vector<int> dijkstra(int n, int start, const std::vector<std::vector<Edge>>& graph);
-
-}
-
-#endif //DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_INCLUDE_DIJKSTRA_HPP_
+#endif //DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_ALGORITHM_INCLUDE_DIJKSTRA_ALGORITHM_DIJKSTRA_HPP_
