@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/dijkstra_multithreaded_src.dir/main.cpp.o -o dijkstra_multithreaded_src  data_structures/libdata_structures.a dijkstra_algorithm/libdijkstra_algorithm.a graph_generator/libgraph_generator.a data_structures/libdata_structures.a 

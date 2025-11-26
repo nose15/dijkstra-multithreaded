@@ -8,8 +8,9 @@
 #include <thread>
 #include <limits>
 #include <iostream>
+#include <memory>
 
-std::vector<double> parallel_dijkstra(const Graph &g, int source, int num_threads, int partitions) {
+std::vector<double> parallel_dijkstra(const Graph& g, int source, int num_threads, int partitions) {
   int n = g.size();
   const auto &adj = g.adj();
   const double INF = std::numeric_limits<double>::infinity();
@@ -28,45 +29,60 @@ std::vector<double> parallel_dijkstra(const Graph &g, int source, int num_thread
   std::atomic<int> active_workers{0};
   std::atomic<bool> stop_flag{false};
 
+  auto worker = [&](int tid) {
+    active_workers.fetch_add(1, std::memory_order_relaxed);
 
-  auto worker = [&](int tid){
-    ++active_workers;
-    while (!stop_flag.load()) {
+    while (!stop_flag.load(std::memory_order_acquire)) {
+
       auto opt = queue.pop();
       if (!opt.has_value()) {
-// no item available; if queue empty and no other workers active, finish
-        if (queue.empty()) break;
-// otherwise busy-wait briefly
+        if (queue.empty())
+          break;
+
         std::this_thread::yield();
         continue;
       }
+
       auto [d_u, u] = *opt;
-// Check if this is an outdated entry
-      double cur = dist_atomic[u].load();
-      if (d_u > cur + 1e-15) continue; // stale entry
 
+      // Bounds check to avoid UB if queue is corrupted
+      if (u < 0 || u >= (int)adj.size())
+        continue;
 
-// relax neighbors
+      double cur = dist_atomic[u].load(std::memory_order_acquire);
+      if (d_u > cur)
+        continue;
+
       for (const auto &e : adj[u]) {
         int v = e.to;
+
+        if (v < 0 || v >= (int)dist_atomic.size())
+          continue;
+
         double nd = d_u + e.weight;
-        double prev = dist_atomic[v].load();
-        while (nd + 1e-15 < prev) {
-// attempt to set a better distance
-          if (dist_atomic[v].compare_exchange_weak(prev, nd)) {
-// pushed new candidate into queue
+        double prev = dist_atomic[v].load(std::memory_order_acquire);
+
+        // CAS loop
+        while (nd < prev) {
+          if (dist_atomic[v].compare_exchange_weak(
+              prev, nd,
+              std::memory_order_acq_rel,
+              std::memory_order_acquire))
+          {
             queue.push(nd, v);
             break;
           }
-// compare_exchange_weak updated prev with current value; loop if still larger
+          // prev now updated to latest value
         }
       }
     }
-    --active_workers;
+
+    active_workers.fetch_sub(1, std::memory_order_relaxed);
   };
 
 
   std::vector<std::thread> threads;
+  threads.reserve(num_threads);
   for (int t = 0; t < num_threads; ++t) threads.emplace_back(worker, t);
   for (auto &th : threads) th.join();
 

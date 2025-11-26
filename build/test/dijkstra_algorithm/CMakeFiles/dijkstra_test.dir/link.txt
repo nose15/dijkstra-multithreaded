@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/dijkstra_test.dir/dijkstra_test.cpp.o -o dijkstra_test  ../../src/dijkstra_algorithm/libdijkstra_algorithm.a ../../lib/libgtest_main.a ../../src/data_structures/libdata_structures.a ../../lib/libgtest.a 

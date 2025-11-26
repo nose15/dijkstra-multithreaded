@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.22)
 project(dijkstra_multithreaded_src)
 
 add_subdirectory(dijkstra_algorithm)

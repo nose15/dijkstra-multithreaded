@@ -1,5 +1,0 @@
-if(EXISTS "/home/lukasz/CLionProjects/dijkstra_multithreaded/build/test/dijkstra_algorithm/dijkstra_test[1]_tests.cmake")
-  include("/home/lukasz/CLionProjects/dijkstra_multithreaded/build/test/dijkstra_algorithm/dijkstra_test[1]_tests.cmake")
-else()
-  add_test(dijkstra_test_NOT_BUILT dijkstra_test_NOT_BUILT)
-endif()

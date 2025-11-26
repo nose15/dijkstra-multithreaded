@@ -6,6 +6,7 @@
 #define DIJKSTRA_MULTITHREADED_SRC_GRAPH_GENERATOR_INCLUDE_GRAPH_GENERATOR_GRAPH_GENERATOR_HPP_
 
 #include <data_structures/graph.hpp>
-Graph generate_random_graph(int n, int m, double max_w = 10.0);
+
+Graph generate_random_graph(int n, double density, double max_w = 10.0);
 
 #endif //DIJKSTRA_MULTITHREADED_SRC_GRAPH_GENERATOR_INCLUDE_GRAPH_GENERATOR_GRAPH_GENERATOR_HPP_

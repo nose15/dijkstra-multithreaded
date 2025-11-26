@@ -7,19 +7,20 @@
 
 #include <random>
 
-Graph generate_random_graph(int n, int m, double max_w) {
+Graph generate_random_graph(int n, double density, double max_w) {
   Graph g(n);
   std::mt19937 rng(std::random_device{}());
-  std::uniform_int_distribution<int> dist_v(0, n - 1);
-  std::uniform_real_distribution<double> dist_w(1.0, max_w);
+  std::uniform_real_distribution<double> prob(0.0, 1.0);
+  std::uniform_real_distribution<double> wdist(1.0, max_w);
 
 
-  for (int i = 0; i < m; ++i) {
-    int u = dist_v(rng);
-    int v = dist_v(rng);
-    if (u == v) v = (v + 1) % n;
-    double w = dist_w(rng);
-    g.add_edge(u, v, w);
+  for (int u = 0; u < n; ++u) {
+    for (int v = 0; v < n; ++v) {
+      if (u == v) continue;
+      if (prob(rng) < density) {
+        g.add_edge(u, v, wdist(rng));
+      }
+    }
   }
   return g;
 }

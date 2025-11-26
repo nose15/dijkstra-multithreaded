@@ -8,50 +8,33 @@
 #include <vector>
 #include <queue>
 #include <mutex>
-#include <random>
 #include <optional>
-#include <utility>
-
-// A simple k-way partitioned priority queue for parallel Dijkstra.
-// Each partition has its own mutex and heap. To pop an item that is
-// near-global-min, a thread samples a small set of partitions and
-// chooses the smallest among their tops (multi-queue technique).
-
-using PQKey = double; // distance
-using PQVal = int; // vertex id
-using PQItem = std::pair<PQKey, PQVal>;
-
+#include <random>
+#include <limits>
 
 class ConcurrentKQueue {
  public:
-// partitions: number of local queues
-// sample_k: how many queues to sample when popping
-  ConcurrentKQueue(int partitions, int sample_k = 2);
+  using PQKey = double;
+  using PQVal = int;
+  using PQItem = std::pair<PQKey, PQVal>; // (distance, vertex)
 
+  explicit ConcurrentKQueue(int partitions, int sample_k);
 
-// push item into queue assigned by hashing 'val'
   void push(PQKey key, PQVal val);
-
-
-// try to pop a near-min item by sampling sample_k queues; returns nullopt if all empty
   std::optional<PQItem> pop();
-
-
-// return whether all queues are empty
   bool empty() const;
 
-
  private:
-  struct LocalQueue {
+  struct LocalPQ {
+    std::priority_queue<PQItem, std::vector<PQItem>, std::greater<>> pq;
     mutable std::mutex mtx;
-    std::priority_queue<PQItem, std::vector<PQItem>, std::greater<PQItem>> pq;
   };
 
+  int k;          // number of partitions
+  int sample_k;   // how many partitions to sample on pop()
+  std::vector<LocalPQ> locals;
 
-  int k;
-  int sample_k;
-  std::vector<LocalQueue> locals;
-  mutable std::mt19937 rng;
+  // No shared RNG — unsafe. Workers must call thread_local RNG inside pop().
 };
 
 #endif //DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_ALGORITHM_INCLUDE_DATA_STRUCTURES_CONCURRENT_KQUEUE_HPP_
