@@ -1,7 +1,3 @@
-//
-// Created by lukasz on 25.11.25.
-//
-
 #include <data_structures/graph.hpp>
 
 Graph::Graph(int n) : m_adj(n) {}

@@ -1,7 +1,3 @@
-//
-// Created by lukasz on 25.11.25.
-//
-
 #include <graph_generator/graph_generator.hpp>
 #include <data_structures/graph.hpp>
 

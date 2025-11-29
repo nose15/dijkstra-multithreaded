@@ -1,7 +1,3 @@
-//
-// Created by lukasz on 25.11.25.
-//
-
 #include <dijkstra_algorithm/dijkstra.hpp>
 #include <data_structures/concurrent_kqueue.hpp>
 #include <atomic>
