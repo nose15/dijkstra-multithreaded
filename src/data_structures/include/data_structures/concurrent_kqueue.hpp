@@ -16,7 +16,7 @@ class ConcurrentKQueue {
  public:
   using PQKey = double;
   using PQVal = int;
-  using PQItem = std::pair<PQKey, PQVal>; // (distance, vertex)
+  using PQItem = std::pair<PQKey, PQVal>;
 
   explicit ConcurrentKQueue(int partitions, int sample_k);
 
@@ -30,11 +30,9 @@ class ConcurrentKQueue {
     mutable std::mutex mtx;
   };
 
-  int k;          // number of partitions
-  int sample_k;   // how many partitions to sample on pop()
+  int k;
+  int sample_k;
   std::vector<LocalPQ> locals;
-
-  // No shared RNG — unsafe. Workers must call thread_local RNG inside pop().
 };
 
 #endif //DIJKSTRA_MULTITHREADED_SRC_DIJKSTRA_ALGORITHM_INCLUDE_DATA_STRUCTURES_CONCURRENT_KQUEUE_HPP_

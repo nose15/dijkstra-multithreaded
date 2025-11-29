@@ -13,7 +13,6 @@ ConcurrentKQueue::ConcurrentKQueue(int partitions, int sample_k_)
 {}
 
 void ConcurrentKQueue::push(PQKey key, PQVal val) {
-  // Hash-based partitioning
   int idx = (std::hash<PQVal>{}(val) & 0x7fffffff) % k;
   auto &L = locals[idx];
   std::lock_guard<std::mutex> lk(L.mtx);
@@ -21,11 +20,9 @@ void ConcurrentKQueue::push(PQKey key, PQVal val) {
 }
 
 std::optional<ConcurrentKQueue::PQItem> ConcurrentKQueue::pop() {
-  // SAFETY: thread-local RNG to avoid data races
   static thread_local std::mt19937 rng{std::random_device{}()};
   std::uniform_int_distribution<int> dist(0, k - 1);
 
-  // --- Sample distinct indices ---
   std::vector<int> sampled;
   sampled.reserve(sample_k);
   while ((int)sampled.size() < sample_k) {
@@ -37,7 +34,6 @@ std::optional<ConcurrentKQueue::PQItem> ConcurrentKQueue::pop() {
   PQItem best{std::numeric_limits<PQKey>::infinity(), -1};
   int best_idx = -1;
 
-  // Find best among sampled
   for (int idx : sampled) {
     auto &L = locals[idx];
     std::lock_guard<std::mutex> lk(L.mtx);
@@ -50,7 +46,6 @@ std::optional<ConcurrentKQueue::PQItem> ConcurrentKQueue::pop() {
     }
   }
 
-  // If found nothing, try all queues
   if (best_idx == -1) {
     for (int i = 0; i < k; ++i) {
       auto &L = locals[i];
@@ -66,7 +61,6 @@ std::optional<ConcurrentKQueue::PQItem> ConcurrentKQueue::pop() {
   if (best_idx == -1)
     return std::nullopt;
 
-  // Now pop the chosen one
   auto &Chosen = locals[best_idx];
   std::lock_guard<std::mutex> lk(Chosen.mtx);
   if (Chosen.pq.empty())

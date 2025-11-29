@@ -10,7 +10,6 @@
 
 #include <memory>
 
-// Runs parallel Dijkstra from source s. Returns vector<double> distances (infinity if unreachable)
 std::vector<double> dijkstra(const Graph& g, int source);
 std::vector<double> parallel_dijkstra(const Graph& g, int source, int num_threads = 4, int partitions = 8);
 
